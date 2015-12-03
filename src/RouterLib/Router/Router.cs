@@ -39,9 +39,104 @@ namespace RouterLib
 
 
 
-        public const string Context_Router_Instance_Key = "Router.Core.Instance";
-        public const string Context_Router_InstanceId_Key = "Router.Core.InstanceId";
-        public const string Context_Router_InstanceTrace_Key = "Router.Core.InstanceTrace";
+        public const string Context_Router_Call_InstanceId_Key = "Router.Core.InstanceId";
+        
+        
+
+
+
+        protected virtual async Task<RoutingContextBase> ResolveAsync(string sAddress, IDictionary<string, object> Context, Stream Body)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start(); // start the clock
+            var re = await mResolver.ResolveAsync(sAddress, Context, Body);
+            if(null != re)
+
+            sw.Stop(); // stop
+
+            // add telemetry;
+            OnTelemetryResolve(re, sw.Elapsed.TotalMilliseconds);
+            
+            // trace
+            Trace.WriteLine(string.Concat("Resolve Completed in:", sw.Elapsed.TotalMilliseconds), "Verbose");
+
+            // return;
+            return re;
+        }
+
+
+        protected virtual async Task<RER> ExecuteContextAsync(RoutingContextBase re, ContextExecuteStrategyBase chs)
+        {
+            RER rer = null;
+            Stopwatch sw = new Stopwatch();
+            var currentChs = chs;
+            ContextExecuteModeBase ExecuteMode = new DoNotRetryMode();
+            var TryCount = 1;
+            var bSucess = false;
+
+
+            while (true)
+            {
+                try
+                {
+                    sw.Start();
+                    rer = (RER)await re.ExecuteAsync(ExecuteMode);
+                    sw.Stop();
+                    bSucess = true;
+                }
+                catch (Exception e)
+                {
+                    if (null == currentChs)
+                        throw;
+
+                    TryCount++;
+
+                    // circut breaker
+                    if (TryCount > mMaxRetryCount)
+                        throw new RouterMaxedRetryException(new AggregateException(e)) { RetryCount = (TryCount - 1), RoutingContext = re };
+
+
+                    try
+                    {
+                        // execute current strategy;
+                        ExecuteMode = await currentChs.ExecuteStrategyAsync(TryCount, re, new AggregateException(e));
+                    }
+                    catch (Exception StrategyExecuteFail)
+                    {
+                        // if we failed to execute strategy we just wrap the exception
+                        // along with the orginal execution one.
+                        throw new FailedToExecuteStrategyException(StrategyExecuteFail, e) { TryCount = TryCount, RoutingContext = re };
+                    }
+
+                    // move to next strategy
+                    currentChs = currentChs.Next;
+
+
+                    if (!ExecuteMode.ShouldRouterTryAgain)
+                        throw new AggregateException(e);
+
+                }
+
+                finally
+                {
+                    OnTelemetryExecute(re, rer, sw.Elapsed.TotalMilliseconds);
+                    Trace.WriteLine(string.Format("Execute in {0} Call Count {1} Routing Type:{2}", 
+                                            sw.Elapsed.TotalMilliseconds, TryCount, re.RouteExecuteType), "Verbose");
+
+                    sw.Reset(); // reset the clock
+                }
+
+                if (bSucess)
+                    break; // exit the loop    
+            }
+
+
+            return rer;
+
+
+        }
+
+
 
 
         #region ctor
@@ -53,6 +148,7 @@ namespace RouterLib
             mHourClicker.OnTrim = (head) => OnHourClickerTrim(head);
         }
         #endregion
+
 
         #region Telemetry Book Keeping
 
@@ -286,7 +382,6 @@ namespace RouterLib
                 mDefaultContextExecuteStrategy = value;
             }
         }
-        
         #region RouteAsync et all
         /// <summary>
         /// Routes the call using the ResolverFrx
@@ -333,92 +428,6 @@ namespace RouterLib
         }
 
 
-        protected virtual async Task<RoutingContextBase> ResolveAsync(string sAddress, IDictionary<string, object> Context, Stream Body)
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start(); // start the clock
-                var re = await mResolver.ResolveAsync(sAddress, Context, Body);
-            sw.Stop(); // stop
-
-            // add telemetry;
-            OnTelemetryResolve(re, sw.Elapsed.TotalMilliseconds);
-            
-            
-            // return;
-            return re;
-        }
-
-
-        protected virtual async Task<RER> ExecuteContextAsync(RoutingContextBase re, ContextExecuteStrategyBase chs)
-        {
-            RER rer = null;
-            Stopwatch sw = new Stopwatch();
-            var currentChs = chs;
-            ContextExecuteModeBase ExecuteMode = new DoNotRetryMode();
-            var TryCount = 1;
-            var bSucess = false;
-            
-            
-            // todo: execute call handling logic
-
-            while (true)
-            {
-                try
-                {
-                    sw.Start();
-                    rer = (RER)await re.ExecuteAsync(ExecuteMode);
-                    sw.Stop();
-                    bSucess = true;
-                }
-                catch (Exception e)
-                {
-                    if (null == currentChs)
-                        throw;
-
-                    TryCount++;
-
-                    // circut breaker
-                    if (TryCount > mMaxRetryCount)
-                        throw new RouterMaxedRetryException(new AggregateException(e)) { RetryCount = (TryCount - 1), RoutingContext =re };
-
-
-                    try
-                    {
-                        // execute current strategy;
-                        ExecuteMode = await currentChs.ExecuteStrategyAsync(TryCount, re, new AggregateException(e));
-                    }
-                    catch (Exception StrategyExecuteFail)
-                    {
-                        // if we failed to execute strategy we just wrap the exception
-                        // along with the orginal execution one.
-                        throw new FailedToExecuteStrategyException(StrategyExecuteFail, e) { TryCount = TryCount, RoutingContext = re};
-                    }
-
-                    // move to next strategy
-                    currentChs = currentChs.Next;
-
-
-                    if (!ExecuteMode.ShouldRouterTryAgain)
-                        throw new AggregateException(e);
-
-                }
-                
-                finally
-                {
-                    OnTelemetryExecute(re, rer, sw.Elapsed.TotalMilliseconds);
-                    sw.Reset(); // reset the clock
-                }
-
-                if (bSucess)
-                    break; // exit the loop    
-            }
-
-
-            return rer;
-
-
-        }
-
 
         /// <summary>
         /// Routes the call using the ResolverFrx
@@ -440,12 +449,10 @@ namespace RouterLib
 
             Context = null != Context ? Context : new Dictionary<string, object>() ;
             // can be used by various sub system involved to reach the router, unique call instance id, or the trace log
-            Context.Add(Context_Router_Instance_Key, this); // router 
-            Context.Add(Context_Router_InstanceId_Key, Guid.NewGuid().ToString()); // instance id
-            Context.Add(Context_Router_InstanceTrace_Key, string.Empty); // trace 
+            Context.Add(Context_Router_Call_InstanceId_Key, Guid.NewGuid().ToString()); // instance id
 
+            #region Resolve  
 
-            // resolve             
             try
             {
                 re = await ResolveAsync(sAddress, Context, Body);
@@ -464,12 +471,12 @@ namespace RouterLib
                 throw new RouterResolveException(e);
             }
 
-
+            #endregion
             // if no resolver is matching then we need return null
             if (null == re)
                 return null;
 
-            // next, we execute
+            #region Execute
             try
             {
                 rer = await ExecuteContextAsync(re, chs);
@@ -480,14 +487,15 @@ namespace RouterLib
             }
             finally
             {
+
                 // context maintenance
                 // just in case the caller intersted in reusing the dictionary
-                Context.Remove(Context_Router_Instance_Key);
-                Context.Remove(Context_Router_InstanceId_Key);
-                Context.Remove(Context_Router_InstanceTrace_Key);
+                Context.Remove(Context_Router_Call_InstanceId_Key);
             }
             return rer;
-       }
+
+            #endregion
+        }
         #endregion  
     }
 }

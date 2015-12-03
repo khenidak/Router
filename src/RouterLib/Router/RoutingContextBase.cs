@@ -46,7 +46,6 @@ namespace RouterLib
 
         public ContextRoutingType RouteExecuteType { get; set; } = ContextRoutingType.Single;
         public List<string> TargetHostAddressList { get { return mTargetAddresses; } }
-        public Dictionary<string, object> Context { get; set; }
         public string MatcherTreeId { get; set; } // provdided by the resolve framework, allows the context to load any cached data.
 
 
@@ -63,7 +62,7 @@ namespace RouterLib
 
                 while (true)
                 {
-                try
+                    try
                     {
 
                         Interlocked.CompareExchange(ref loadbalanceIdx.Idx, -1, int.MaxValue);
@@ -84,7 +83,7 @@ namespace RouterLib
                     catch (ArgumentOutOfRangeException)
                     {
                         // this will happen if the list got replaced with a shorter list
-                        // after we picked a position, that happened to be the last one. ingore and try again.
+                        // after we picked a position > sizeof(new list). ingore and try again.
                     }
 
                     // anyother exception should be vented upwards.

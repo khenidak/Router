@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RouterLib
@@ -17,11 +18,16 @@ namespace RouterLib
     /// </summary>
     public abstract class ResolverBase : IRouteResolver
     {
-        protected SortedDictionary<int, MatcherBase> mMatchList = new SortedDictionary<int, MatcherBase>();
+        private int Changing = 0;
+        private SpinWait locker  = new SpinWait(); 
+        private SortedDictionary<int, MatcherBase> mMatchList = new SortedDictionary<int, MatcherBase>();
+
         protected ResolverState mState = new ResolverState();
-        protected object syncLock = new object(); 
+
         public ResolverState State { get { return mState; } }
 
+
+        
 
         public Task AddMatcherAsync(MatcherBase matcher, int Order)
         {
@@ -30,8 +36,12 @@ namespace RouterLib
 
             return Task.Run(() =>
             {
-                lock(syncLock)
-                    mMatchList.Add(Order, matcher);
+                while (0 != Interlocked.CompareExchange(ref Changing, 1, 0))
+                    locker.SpinOnce();
+
+                mMatchList.Add(Order, matcher);
+                Changing = 0;
+
             });
         }
 
@@ -39,15 +49,14 @@ namespace RouterLib
         {
             return Task.Run(() =>
             {
+                while (0 != Interlocked.CompareExchange(ref Changing, 1, 0))
+                    locker.SpinOnce();
 
-                lock (syncLock)
-                {
-                    mMatchList.Remove(Order);
-                }
-
-                    
+                mMatchList.Remove(Order);
+                    Changing = 0;
             });
         }
+
 
 
         protected virtual async Task<RoutingContextBase> ResolveAsync(RoutingContextBase re,
@@ -55,22 +64,34 @@ namespace RouterLib
                                                               IDictionary<string, object> Context,
                                                               Stream Body)
         {
-            // can not do matching on empty list
-            if (0 == mMatchList.Count)
-                throw new InvalidOperationException("Resolver can not work empty matchers!");
-
+            
 
 
 
             bool bMatched = false;
-            
-            // todo: apply a lock on matching trees
-            foreach (var matcher in mMatchList.Values)
+
+            while (0 != Interlocked.CompareExchange(ref Changing, 1, 0))
+                locker.SpinOnce();
+
+            try
             {
+                // can not do matching on empty list
+
+                if (0 == mMatchList.Count)
+                    throw new InvalidOperationException("Resolver can not work empty matchers!");
+
+                // try to match
+                foreach (var matcher in mMatchList.Values)
+                {
                     bMatched = await matcher.MatchAsync(re, sAddress, Context, Body);
-                if (bMatched) break;
+                    if (bMatched) break;
+                }
             }
-            
+            finally
+            {
+                Changing = 0;
+            }
+
             if (!bMatched)
                 return null;
 

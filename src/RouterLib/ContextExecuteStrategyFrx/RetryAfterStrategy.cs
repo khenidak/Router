@@ -9,7 +9,6 @@ namespace RouterLib
     /// <summary>
     /// Simple descritpive retry logic that the router execute to handle errors
     /// </summary>
-         
     public class RetryAfterStrategy : ContextExecuteStrategyBase
     {
         protected int mDelayMs = 0;

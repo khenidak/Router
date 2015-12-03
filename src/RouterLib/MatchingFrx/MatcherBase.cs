@@ -25,7 +25,7 @@ namespace RouterLib
 
     public abstract class MatcherBase
     {
-        
+
         /* 
             this id is copied to RoutingContextBase.
             the idea is, if you need to cache info based on matching tree results
@@ -39,6 +39,9 @@ namespace RouterLib
         */
         public string MatcherTreeId { get; set; } = Guid.NewGuid().ToString();
         public MatcherBase Next { get; set; }
+
+        
+
         public async virtual Task<bool> MatchAsync(RoutingContextBase routingContext,
                                                    string sAddress,
                                                    IDictionary<string, object> Context,
@@ -128,6 +131,10 @@ namespace RouterLib
                     throw new InvalidOperationException(string.Format("string matcher encountered unknown string match type:{0}", matchType.ToString()));
             }
         }
+        
+        
+         
+        
         #endregion
 
     }

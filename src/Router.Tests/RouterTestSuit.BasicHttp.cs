@@ -41,7 +41,6 @@ namespace RouterTests
 
 
             var router = new HttpRouter(resolver);
-
             
             var results = await router.RouteAsync("http://www.bing.com");
 
