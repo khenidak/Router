@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RouterLib", "RouterLib\RouterLib.csproj", "{A143905B-9040-42E0-A3A1-40EE8CA1F914}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RouterLib.Owin", "RouterLib.Owin\RouterLib.Owin.csproj", "{9F27162D-4D3B-4EC4-B283-C9B13AFB61DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Router.Tests", "Router.Tests\Router.Tests.csproj", "{2A878015-631B-4827-A3A7-F3B5753013B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpRouterLib", "HttpRouterLib\HttpRouterLib.csproj", "{7A061B5A-C067-4CC7-AA5D-2091459D2A41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A143905B-9040-42E0-A3A1-40EE8CA1F914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A143905B-9040-42E0-A3A1-40EE8CA1F914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A143905B-9040-42E0-A3A1-40EE8CA1F914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A143905B-9040-42E0-A3A1-40EE8CA1F914}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F27162D-4D3B-4EC4-B283-C9B13AFB61DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F27162D-4D3B-4EC4-B283-C9B13AFB61DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F27162D-4D3B-4EC4-B283-C9B13AFB61DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F27162D-4D3B-4EC4-B283-C9B13AFB61DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A878015-631B-4827-A3A7-F3B5753013B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A878015-631B-4827-A3A7-F3B5753013B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A878015-631B-4827-A3A7-F3B5753013B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A878015-631B-4827-A3A7-F3B5753013B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A061B5A-C067-4CC7-AA5D-2091459D2A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A061B5A-C067-4CC7-AA5D-2091459D2A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A061B5A-C067-4CC7-AA5D-2091459D2A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A061B5A-C067-4CC7-AA5D-2091459D2A41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

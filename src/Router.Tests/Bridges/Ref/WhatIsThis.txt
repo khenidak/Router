@@ -1,0 +1,5 @@
+﻿some of the tests are using assemblies not currently in NuGet. 
+Web Socket Server & Utils: https://github.com/khenidak/WebSocketsServer it was rebuilt for AnyCPU since Test infrastructure really don't like x64
+
+
+ 
