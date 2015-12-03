@@ -28,11 +28,17 @@ namespace HttpRouterLib
         public Dictionary<string, IEnumerable<string>> Headers { get; set; } = new Dictionary<string, IEnumerable<string>>();
 
 
-        private const string State_Key_LoadBalancingSet = "http.balancingset-{0}";
         private const string Content_Type_Header_Name = "Content-Type";
         private const string Content_Length_Header_Name = "Content-Length";
 
+        public HttpRoutingContext(IRouteResolver Resolver, string sAddress,
+                                IDictionary<string, object> Context,
+                                Stream Body) :
+                                base(Resolver, sAddress, Context, Body)
+        {
 
+            // no op ctor
+        }
 
         protected virtual string GetPath()
         {
@@ -138,63 +144,7 @@ namespace HttpRouterLib
 
         }
 
-        protected virtual string GetNextInBalancingSet()
-        {
-            //todo replace queue because it can be empty
-            /*
-             Load balancing works by queueing the entire load balancing set
-             then de-queue (use) then enqueue again 
-             
-             if the load balancing set his empty it will be created.
-             if a new url added to the balancing set then it will be queued 
-             at the end.
-
-             this means if you distroyed the entire tree and recreated it will leave dangling 
-             references in the state
-            */
-
-            var sStateKey = string.Format(State_Key_LoadBalancingSet, MatcherTreeId);
-            var q = (ConcurrentQueue<string>)  mResolver.State.StateEntries.GetOrAdd(sStateKey, (dictKey) => { return new ConcurrentQueue<string>(); });
-
-
-
-            // do we have a new address
-            foreach (var address in TargetHostAddressList)
-            {
-                
-                if (!q.Contains(address))
-                    q.Enqueue(address);
-            }
-
-            var nextAddress = string.Empty;
-
-            while (true)
-            {
-                q.TryDequeue(out nextAddress);
-
-                // if the address is still in the target host list then we are cool
-                // if not it will be dequed and gone.
-                if (TargetHostAddressList.Contains(nextAddress))
-                    break;
-
-                if (q.IsEmpty)
-                    throw new InvalidOperationException("Load balancing set is empty");
-            }
-
-            // before enqueue make sure that the address list still contains it
-            if(TargetHostAddressList.Contains(nextAddress))
-                q.Enqueue(nextAddress); // return it back in line!
-            return nextAddress;
-        }
-
-        public HttpRoutingContext(IRouteResolver Resolver,  string sAddress, 
-                                IDictionary<string, object> Context, 
-                                Stream Body) : 
-                                base(Resolver, sAddress, Context, Body)
-        {
-
-          // no op ctor
-        }
+      
 
 
 
@@ -267,7 +217,7 @@ namespace HttpRouterLib
 
                 case ContextRoutingType.RoundRobin:
                     {
-                        var hrm = getRequestMessage(this.GetNextInBalancingSet());
+                        var hrm = getRequestMessage(this.GetNextHostAddressInBalancingSet());
                         var response = await client.SendAsync(hrm);
                         result.SetResult(response);
                         break;

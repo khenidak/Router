@@ -11,6 +11,9 @@ namespace RouterLib
     /// The resolver is the entry point for the resolve Fx. it sets on top of a set matcher trees, each is assigned a priority
     /// when resolving it will try to resolve using the matching trees according to order if one matched, it will be used 
     /// if none matched a null is returned. 
+    /// 
+    /// Resolver also provide a state for all matcher trees used by it. represented by the mState
+    /// matchers can use it from stuff like load balancing (keeping track of last host address used) or general caching
     /// </summary>
     public abstract class ResolverBase : IRouteResolver
     {
@@ -60,13 +63,14 @@ namespace RouterLib
 
 
             bool bMatched = false;
-
+            
+            // todo: apply a lock on matching trees
             foreach (var matcher in mMatchList.Values)
             {
-                bMatched = await matcher.MatchAsync(re, sAddress, Context, Body);
+                    bMatched = await matcher.MatchAsync(re, sAddress, Context, Body);
                 if (bMatched) break;
             }
-
+            
             if (!bMatched)
                 return null;
 

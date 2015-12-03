@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RouterLib
@@ -28,6 +30,8 @@ namespace RouterLib
             new List<Type>() { typeof(DoNotRetryMode), typeof(RetryMode) };
 
 
+        protected const string State_Key_LoadBalancingSet = "http.balancingset-{0}";
+
 
         protected IRouteResolver mResolver;
 
@@ -44,6 +48,54 @@ namespace RouterLib
         public List<string> TargetHostAddressList { get { return mTargetAddresses; } }
         public Dictionary<string, object> Context { get; set; }
         public string MatcherTreeId { get; set; } // provdided by the resolve framework, allows the context to load any cached data.
+
+
+        protected virtual string GetNextHostAddressInBalancingSet()
+        {
+            /*
+            Use the the address list as circular buffer with a pointer maintenaned 
+            as a state. if the list is empty (or was emptied by mistake) return an exception. 
+            */            
+
+            var sStateKey = string.Format(State_Key_LoadBalancingSet, MatcherTreeId);
+            var loadbalanceIdx = (LoadBalanceIdx) mResolver.State.StateEntries.GetOrAdd(sStateKey, (dictKey) => { return new LoadBalanceIdx(); });
+            string nextAddress = null;
+
+                while (true)
+                {
+                try
+                    {
+
+                        Interlocked.CompareExchange(ref loadbalanceIdx.Idx, -1, int.MaxValue);
+                        var newIdx = Interlocked.Increment(ref loadbalanceIdx.Idx);
+
+                        // if the list was emptied by mistake, we will go catch DivideByZeroException
+                        nextAddress = TargetHostAddressList[newIdx % TargetHostAddressList.Count];
+                    
+                        // so if address was removed after we picked it up, we just try agian
+                        if (TargetHostAddressList.Contains(nextAddress))
+                                break;
+                    }
+                    catch (DivideByZeroException)
+                    {
+                        //somebody cleared the address list while we are trying to pick an address
+                        throw new InvalidOperationException("Load balancing set is empty");
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        // this will happen if the list got replaced with a shorter list
+                        // after we picked a position, that happened to be the last one. ingore and try again.
+                    }
+
+                    // anyother exception should be vented upwards.
+                    
+                }
+            
+
+            return nextAddress;
+        }
+
+
 
         protected Stream getBodyCopy()
         {

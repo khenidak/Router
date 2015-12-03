@@ -73,6 +73,7 @@
     <Compile Include="Router\Exceptions\NotSupportedExecuteModeException.cs" />
     <Compile Include="Router\Exceptions\RouterMaxedRetryException.cs" />
     <Compile Include="Router\Exceptions\RouterResolveException.cs" />
+    <Compile Include="Router\LoadBalanceIdx.cs" />
     <Compile Include="Router\RoutingContextBase.cs" />
     <Compile Include="ResolveFrx\IRouteResolver.cs" />
     <Compile Include="Router\Router.cs" />
