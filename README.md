@@ -17,6 +17,7 @@ Router is a building block that allows you to route requests between two applica
 
  Because application gateway are meant to process all request, You can use it to do central user AuthN/AuthZ at the entry point then perform trusted subsystem AuthN/AuthZ between the gateway and the backend.
 
+ 
 
  # Overview #
 
@@ -26,12 +27,12 @@ Router is a building block that allows you to route requests between two applica
 
 **From top to bottom, the idea is:**
 * The hosting process (which might include a communication listener) will host one or many router instances.
-* The router uses a resolver to perform a resolve on calls. In addition to maintaining telemetry.
-* The resolver itself uses the matching framework (discussed in the in-depth section). Currently the resolve operation takes < 0.01 ms (and most of times falls under 0.001 ms) on intel i7 quad core machine.
-* The matching framework is a stateless in memory tree of *matchers* that are executed in sequence allowing request validation, request modification, in addition to generate the ** Routing Context**.
-* **Routing Context** represents a repeatable execution context. The router then executes the context returning to caller ** Routing Results**. Router uses the Execution Strategy to handle errors, perform retries or other.
-* The resolver is presented to the matching framework and routing contexts to allow them to perform in-between-routing-calls caching such as cache results, cache long calculation results (for example it is used by the base ** Routing Context** to maintain a reference to last host used in a load balancing set).  
-* Execution Strategies are represented as an in memory stateless linked list. Router executes strategy and then move to the next in case of errors (more on this in the in-depth section).         
+* **The Router** uses a resolver to perform a resolve on calls. In addition to maintaining telemetry.
+* The resolver itself uses the **Matching Framework** (discussed in the in-depth section). Currently the resolve operation takes < 0.01 ms (and most of times falls under 0.001 ms) on intel i7 quad core machine.
+* The **Matching Framework** is a stateless in memory tree of *matchers* that are executed in sequence allowing request validation, request modification, in addition to building the **Routing Context**.
+* **Routing Context** represents a repeatable execution context. The router then executes the context returning to caller **Routing Results**. Router uses the Execution Strategy to handle errors, perform retries or other.
+* The resolver instance is presented to the matching framework and routing contexts to allow them to perform in-between-routing-calls caching such as cache results, cache long calculation results (for example it is used by the base **Routing Context** to maintain a reference to last host used in a load balancing set).  
+* **Execution Strategy Framework** is a framework that is used by router to handle errors. The framework consists of a set of execution Strategies, they are represented as an in memory stateless linked list. Router executes strategy and then move to the next in case of errors (more on this in the in-depth section).         
 
 # How to Use #
 ```
@@ -66,5 +67,5 @@ var results = await router.RouteAsync("bing");
 3. **RouterLib.Owin**:  Broker as Owin Owin pipeline stage.
 4. **Router.Tests**: testing and sample project for all of the above.
 
-# Further Reading #
+# Next Steps #
 * [In-Depth](./docs/in-depth.md) Further discussion on how matching & execution strategy frameworks are working.

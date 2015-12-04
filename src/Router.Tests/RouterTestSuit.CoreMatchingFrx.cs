@@ -102,8 +102,7 @@ namespace RouterTests
 
             var path = "api/values/0";
             var customKey = "MyCustomContextKey";
-            // this pluming is to extract which host are we going to use to route
-
+           
 
             var headMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
             // Whenever a context contains a key we will route all the traffic to server02
@@ -151,11 +150,9 @@ namespace RouterTests
             var customKey = "MyCustomContextKey";
             var customValue = "MyCustomValue";
 
-            // this pluming is to extract which host are we going to use to route
-
+           
 
             var headMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
-            // Whenever a context contains a key with expected value we will route all the traffic to server02
             headMatcher.Chain(new SetAddressListMatcher(Srv02HostNamePort),
                               new ContextValueStringMatcher(customKey, customValue, StringMatchType.Exact));
 
