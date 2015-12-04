@@ -18,8 +18,9 @@ Router is a building block that allows you to route requests between two applica
  Because application gateway are meant to process all request, You can use it to do central user AuthN/AuthZ at the entry point then perform trusted subsystem AuthN/AuthZ between the gateway and the backend.
 
 
- # Design Overview #
-![Overview](./docs/models.png)
+ # Overview #
+
+![Overview](./docs/overview.png)
 
 > Everything in the framework is either replaceable or customizable (except for the router which supports only customization).
 
