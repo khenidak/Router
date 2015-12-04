@@ -13,9 +13,10 @@ namespace RouterLib
     /// <summary>
     /// Represents an execution context created as the result of executing a resolve tree
     /// at the basic funciton it maintenane
-    /// List of host address, which the call should go to
-    /// Routing type (on host addresses) single, fastest, loadbalanced 
-    /// 
+    /// 1- List of host address, which the call should go to
+    /// 2- Routing type (on host addresses) single, fastest, loadbalanced 
+    /// 3- Basic R/R load balancing between host addresss
+    /// Note on Execute Strategy:
     /// as the router executes the strategy (for error handling, retries etc) it will pass
     /// a mode to ExecuteAsync, this mode can be anything. hence each context defines the allowed 
     /// modes (for example a context may choose not to honor Route to a different host)
@@ -64,11 +65,10 @@ namespace RouterLib
                 {
                     try
                     {
+                    
+                        var newIdx = Math.Abs(Interlocked.Increment(ref loadbalanceIdx.Idx));
 
-                        Interlocked.CompareExchange(ref loadbalanceIdx.Idx, -1, int.MaxValue);
-                        var newIdx = Interlocked.Increment(ref loadbalanceIdx.Idx);
-
-                        // if the list was emptied by mistake, we will go catch DivideByZeroException
+                        // if the list was emptied by mistake, we will go to DivideByZeroException
                         nextAddress = TargetHostAddressList[newIdx % TargetHostAddressList.Count];
                     
                         // so if address was removed after we picked it up, we just try agian
@@ -85,9 +85,7 @@ namespace RouterLib
                         // this will happen if the list got replaced with a shorter list
                         // after we picked a position > sizeof(new list). ingore and try again.
                     }
-
-                    // anyother exception should be vented upwards.
-                    
+                    // anyother exception should be vented up the stack.                    
                 }
             
 
