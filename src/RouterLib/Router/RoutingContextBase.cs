@@ -55,6 +55,18 @@ namespace RouterLib
             /*
             Use the the address list as circular buffer with a pointer maintenaned 
             as a state. if the list is empty (or was emptied by mistake) return an exception. 
+
+            we cheated a bit here routing is 
+            A-B-C 
+            A-B-C
+            until we hit int.MaxValue then
+            C-B-A
+            C-B-A 
+            until we hit 0 then
+            A-B-C
+            A-B-C 
+
+            Overall it is R/R 
             */            
 
             var sStateKey = string.Format(State_Key_LoadBalancingSet, MatcherTreeId);

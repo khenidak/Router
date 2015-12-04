@@ -24,17 +24,7 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
-
-            /*
-                Route all requests from Server 1 to Server 2
-
-            */
-
-
-
             var path = "api/values/0";
-            // this pluming is to extract which host are we going to use to route
 
 
             var headMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
@@ -44,11 +34,7 @@ namespace RouterTests
 
 
             await resolver.AddMatcherAsync(headMatcher, 0);
-
-
             var router = new HttpRouter(resolver);
-
-            
 
             var results = await router.RouteAsync(string.Concat(srv01Address, path));
 
@@ -66,7 +52,7 @@ namespace RouterTests
 
         [TestMethod]
         [TestCategory("CoreMatchingFrx")]
-        public async Task MatchOnIIFMatcher()
+        public async Task MatchOnContextContainsKey()
         {
             var resolver = new HttpRouteResolver();
 
@@ -74,11 +60,10 @@ namespace RouterTests
 
             var path = "api/values/0";
             var customKey = "MyCustomContextKey";
-            // this pluming is to extract which host are we going to use to route
-
+            
 
             var headMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
-            // Whenever a context contains a key we will route all the traffic to server02
+
             headMatcher.Chain(new SetAddressListMatcher(Srv02HostNamePort),
                               new ContextContainsKeyMatcher(customKey, StringMatchType.Exact));
 
@@ -109,7 +94,7 @@ namespace RouterTests
 
         [TestMethod]
         [TestCategory("CoreMatchingFrx")]
-        public async Task MatchOnContextContainsKey()
+        public async Task MatchOnIIFMatcher()
         {
             var resolver = new HttpRouteResolver();
 

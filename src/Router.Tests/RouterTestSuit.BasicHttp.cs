@@ -24,24 +24,19 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
             /*
-            // it is a linked list, executed from last to end
-                if source address is exactly matching http://www.bing.com 
-                then
-                    Set address list (with one address) to http://www.microsoft.com
-                    set http method to httpGet;
+            route from bing to microsoft 
+
             */
-            var firstMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
-            firstMatcher.Chain(new SetAddressListMatcher("www.microsoft.com"),
+            var headMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
+            headMatcher.Chain(new SetAddressListMatcher("www.microsoft.com"),
                                new HostAddressMatcher("www.bing.com", StringMatchType.UriHostandPortMatch));
 
 
-            await resolver.AddMatcherAsync(firstMatcher, 0);
+            await resolver.AddMatcherAsync(headMatcher, 0);
 
 
             var router = new HttpRouter(resolver);
-            
             var results = await router.RouteAsync("http://www.bing.com");
 
 
@@ -57,7 +52,6 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
 
             /*
                 anything point to http://localhost:9001 
@@ -72,12 +66,6 @@ namespace RouterTests
 
             var path = "api/randomdelay/0";
             var trytimes = 5; 
-            // this pluming is to extract which host are we going to use to route
-
-            
-
-
-
             var firstMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
 
             firstMatcher.Chain(new SetAddressListMatcher(new string[] { Srv01HostNamePort, Srv02HostNamePort, Srv03HostNamePort }, false, ContextRoutingType.FastestRoute),
@@ -119,13 +107,10 @@ namespace RouterTests
         {
             var resolver = new HttpRouteResolver();
 
-
-            // simple routing to ensure that resolver routing algorthim is working
-
+            
             /*
                 anything point to http://localhost:9001 
-                will be routed as fastest route to
-                http://locahost:9002 and http://locahost:9003
+                will be routed as  be aggregated from multiple backend endpoints 
 
                 With HttpGet + Same path
 
@@ -135,10 +120,7 @@ namespace RouterTests
 
             var path = "api/randomdelay/0";
             var Hosts = 3;
-            // this pluming is to extract which host are we going to use to route
-
-
-
+            
 
 
             var firstMatcher = new HttpSetMethodMatcher(HttpMethod.Get);
@@ -151,8 +133,6 @@ namespace RouterTests
 
 
             var router = new HttpRouter(resolver);
-
-            
 
             var resultsList = new List<HttpRoutingResult>(Hosts);
             var responsesList = new HashSet<string>();
@@ -181,7 +161,6 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
 
             /*
                 anything point to http://localhost:9001 
@@ -197,7 +176,6 @@ namespace RouterTests
 
             var path = "/api/values/0";
             var trytimes = 3;
-            // this pluming is to extract which host are we going to use to route
 
 
 
@@ -266,8 +244,6 @@ namespace RouterTests
         {
             var resolver = new HttpRouteResolver();
 
-
-            // simple routing to ensure that resolver routing algorthim is working
 
             /*
                 anything point to http://localhost:9001 

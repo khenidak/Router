@@ -24,14 +24,7 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
-
-            /*
-                Route all requests from Server 1 to Server 2
-                and add a custom header
-            */
-
-
+        
 
             var path = "api/Headers/0";
             var customHeaderName = "customHeader";
@@ -77,13 +70,7 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
-
-            /*
-                Route all requests from Server 1 to Server 2
-                and add a custom header
-            */
-
+        
 
 
             var path = "api/Headers/0";

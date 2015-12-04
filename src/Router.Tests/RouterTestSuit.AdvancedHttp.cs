@@ -30,7 +30,7 @@ namespace RouterTests
             var path = "api/values/0";
             
             /*
-                route to server 2 over ride the scheme to http & path to a static path
+                route to server 2 override the scheme to http & path to a static path
             */
 
 
@@ -43,14 +43,9 @@ namespace RouterTests
 
 
             await resolver.AddMatcherAsync(headMatcher, 0);
-
-
             var router = new HttpRouter(resolver);
-
             
-
             var results = await router.RouteAsync(string.Concat("xxx://", Srv01HostNamePort)); // bad scehme & no path
-
 
             var responseMessage = await results.ResultAsAsync<HttpResponseMessage>();
             var responseString = await responseMessage.Content.ReadAsStringAsync();
@@ -70,8 +65,7 @@ namespace RouterTests
             var resolver = new HttpRouteResolver();
 
 
-            // simple routing to ensure that resolver routing algorthim is working
-
+            
             /*
                 Route all requests from Server 1 to Server 2
 
@@ -82,9 +76,6 @@ namespace RouterTests
             var path = "api/models/";
             var sentModel = Model.getRandomModel();
 
-            // this pluming is to extract which host are we going to use to route
-
-
             var headMatcher = new HttpSetMethodMatcher(HttpMethod.Post);
 
             headMatcher.Chain(new SetAddressListMatcher(Srv02HostNamePort),
@@ -94,13 +85,8 @@ namespace RouterTests
 
             await resolver.AddMatcherAsync(headMatcher, 0);
 
-
             var router = new HttpRouter(resolver);
-
-            
-
             var results = await router.RouteAsync(string.Concat(srv01Address, path), sentModel.asJsonStream());
-
 
             var responseMessage = await results.ResultAsAsync<HttpResponseMessage>();
             var responseString = await responseMessage.Content.ReadAsStringAsync();
@@ -108,7 +94,6 @@ namespace RouterTests
 
 
             Assert.AreEqual(sentModel.ModelId, modelReturn.Models[0].ModelId);
-
             Assert.AreEqual(string.Concat(srv02Address, path), modelReturn.RequestUri);
 
         }
@@ -178,9 +163,6 @@ namespace RouterTests
 
 
             var router = new HttpRouter(resolver);
-
-            
-
             var results = await router.RouteAsync(string.Concat(srv01Address, path,"?ModelId=", sentModel.ModelId), sentModel.asJsonStream());
 
 
@@ -190,7 +172,6 @@ namespace RouterTests
 
 
             Assert.AreEqual(sentModel.ModelId, modelReturn.Models[0].ModelId);
-
             Assert.AreEqual(string.Concat(srv02Address, path, "?ModelId=", sentModel.ModelId), modelReturn.RequestUri);
 
         }
