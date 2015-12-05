@@ -14,16 +14,10 @@ namespace HttpRouterLib
     /// <summary>
     /// Http specific routing context that provides the routing mechanics for http endpoints
     /// </summary>
-    class HttpRoutingContext : RoutingContextBase
+    public class HttpRoutingContext : RoutingContextBase
     {
         public HttpMethod Method { get; set; } = HttpMethod.Get;
-        public bool OverridePath { get; set; } = false; // if true the path in the source address will
-                                                         // be ignored favoring Path property
-        public string Path { get; set; } = string.Empty;
-
-        public bool OverrideScheme { get; set; } = false;
-
-        public string Scheme { get; set; } = string.Empty;
+      
 
         public Dictionary<string, IEnumerable<string>> Headers { get; set; } = new Dictionary<string, IEnumerable<string>>();
 

@@ -71,7 +71,7 @@ namespace RouterLib.Owin
 
 
             if (!string.IsNullOrEmpty(queryString))
-                string.Concat(uri, queryString);
+                uri = string.Concat(uri, "?", queryString);
 
             return uri;
         }

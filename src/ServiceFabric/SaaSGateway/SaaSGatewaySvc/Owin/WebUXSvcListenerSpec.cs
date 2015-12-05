@@ -1,44 +1,44 @@
 ﻿
-using Owin;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Linq;
-
-using RouterLib.Owin;
-using System.IO;
-using System.Collections.Generic;
-
-using RouterLib;
-using HttpRouterLib;
-
-
-namespace RouterTests
-
+namespace SaaSGatewaySvc
 {
-    public class TestOwinRouterStartUp
+
+    using Owin;
+    using System.Threading.Tasks;
+    using System.IO;
+    using HttpRouterLib;
+    using RouterLib;
+    using RouterLib.Owin;
+    using System.Net.Http;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    internal class SaaSGatwaySvcListenerSpec : IOwinListenerSpec
     {
-        // creates an OWIN pipeline that has the router embeded 
-        // in it
+        private readonly SaaSGatewaySvc service;
+
+        public SaaSGatwaySvcListenerSpec(SaaSGatewaySvc service)
+        {
+            this.service = service;
+        }
         private async Task<HttpRouter> GetRouter()
         {
             var resolver = new HttpRouteResolver();
-            
-            
+
+
             var headMatcher = new HttpFromOwinReqCtxMatcher(); // copy methods and headers as is
 
-            // route from Owin Server Listening Address to server 2 
-            headMatcher.Chain(new SetAddressListMatcher(RouterTestSuit.Srv02HostNamePort),
-                              new HostAddressMatcher(RouterTestSuit.OwinRouterSrvHostNamePort, StringMatchType.UriHostandPortMatch));
+            //using my custom SaaS tenant matcher address matcher
+            headMatcher.Chain(new MatchHostAddressForTenant());
 
             await resolver.AddMatcherAsync(headMatcher, 0);
             return new HttpRouter(resolver);
 
         }
-        public void Configuration(IAppBuilder appBuilder)
+
+
+        public void CreateOwinPipeline(IAppBuilder app)
         {
-
-            // this bridge, bridges Http (via Owin) to Http endpoints
-
+            // The below is just boilerplate code just as OwinToHttp bridge in the Router.Tests project
 
             var router = GetRouter().Result;
             var mwOptions = new DefaultRouterMwOptions<HttpRouter, HttpRoutingResult, HttpRouteResolver>(router);
@@ -65,17 +65,17 @@ namespace RouterTests
 
 
                 #region Body Processing
-                    // copy body from the backend request to the down stream
+                // copy body from the backend request to the down stream
 
-                    var backendstream = await hrm.Content.ReadAsStreamAsync();
+                var backendstream = await hrm.Content.ReadAsStreamAsync();
 
-                    if (null != backendstream && 0 != backendstream.Length)
-                    {
-                        var downstream = OwinCtx["owin.ResponseBody"] as Stream;
-                    
+                if (null != backendstream && 0 != backendstream.Length)
+                {
+                    var downstream = OwinCtx["owin.ResponseBody"] as Stream;
+                     
 
-                        await backendstream.CopyToAsync(downstream);
-                    }
+                    await backendstream.CopyToAsync(downstream);
+                }
                 #endregion
 
                 #region Headers Processing
@@ -86,16 +86,16 @@ namespace RouterTests
                 {
                     // Microsoft.Owin.Hosting.HttpListener adds its own 
                     // headers, the idea here is to copy backend custom headers if any
-                    if (!downstreamHeaders.ContainsKey(header.Key))
+                    if(!downstreamHeaders.ContainsKey(header.Key))
                         downstreamHeaders.Add(header.Key, header.Value.ToArray());
-                }   
+                }
                 #endregion
 
             };
 
-            
-            appBuilder.UseOwinRouter(mwOptions);
-            
+
+            app.UseOwinRouter(mwOptions);
+
 
         }
     }

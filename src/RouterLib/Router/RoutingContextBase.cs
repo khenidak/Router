@@ -34,11 +34,12 @@ namespace RouterLib
         protected const string State_Key_LoadBalancingSet = "http.balancingset-{0}";
 
 
-        protected IRouteResolver mResolver;
 
 
         protected List<string> mTargetAddresses = new List<string>();
 
+
+        public IRouteResolver Resolver { get; private set; }
 
         public string SourceAddress { get; set;}
         public IDictionary<string, object> SourceContext { get; set; }
@@ -47,8 +48,14 @@ namespace RouterLib
 
         public ContextRoutingType RouteExecuteType { get; set; } = ContextRoutingType.Single;
         public List<string> TargetHostAddressList { get { return mTargetAddresses; } }
-        public string MatcherTreeId { get; set; } // provdided by the resolve framework, allows the context to load any cached data.
+        public string MatcherTreeId { get; set; } // provdided by the matching framework (matcher base class), allows the context to load any cached data.
 
+
+        public bool OverridePath { get; set; } = false; // if true the path in the source address will
+                                                        // be ignored favoring Path property
+        public string Path { get; set; } = string.Empty;
+        public bool OverrideScheme { get; set; } = false;
+        public string Scheme { get; set; } = string.Empty;
 
         protected virtual string GetNextHostAddressInBalancingSet()
         {
@@ -70,7 +77,7 @@ namespace RouterLib
             */            
 
             var sStateKey = string.Format(State_Key_LoadBalancingSet, MatcherTreeId);
-            var loadbalanceIdx = (LoadBalanceIdx) mResolver.State.StateEntries.GetOrAdd(sStateKey, (dictKey) => { return new LoadBalanceIdx(); });
+            var loadbalanceIdx = (LoadBalanceIdx) Resolver.State.StateEntries.GetOrAdd(sStateKey, (dictKey) => { return new LoadBalanceIdx(); });
             string nextAddress = null;
 
                 while (true)
@@ -158,7 +165,7 @@ namespace RouterLib
             SourceAddress = sAddress;
             SourceContext = Context;
             SourceBody = Body;
-            mResolver = Resolver;
+            this.Resolver = Resolver;
         }
 
 
