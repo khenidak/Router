@@ -33,7 +33,7 @@ Router is a building block that allows you to route requests between two applica
 * **Execution Strategy Framework** is a framework that is used by the router to handle errors. The framework consists of a set of execution strategies. They are represented as an in memory stateless linked list. Router executes a strategy and then moves to the next in case of errors (more on this in the [In-Depth](./docs/in-depth.md) section).         
 
 # How to Use #
-```
+```C#
 // The test project contains additional examples with more complex routing logic.  
 // At minimum you need router, resolver, and one or more matchers
 var resolver = new HttpRouteResolver(); // Included in the repo
