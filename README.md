@@ -3,7 +3,7 @@ Router is a building block that allows you to route requests between two applica
 
  # Usage Context #
 1. Context based routing such as based on Http headers, host address, path, time of day, combination of conditions or custom.
-2. Complex routing based on external factors such as match address based on user identity. For example matching user/tenants (SaaS Scenarios). Addresses can be statically defined or dynamically resolved from a backend system.
+2. Complex routing based on external factors such as match address based on user identity. For example matching user/tenants (SaaS Scenarios, a sample scenario is provided in /servicefabric directory ). Addresses can be statically defined or dynamically resolved from a backend system.
 3. Apply complex inflight call modification logic such as replacing payload body, modifying headers (in case of http), changing path or others   
 4. Apply call routing logic such as
   * Scatter/Gather call is routed to multiple backend hosts and response is aggregated
@@ -17,7 +17,7 @@ Router is a building block that allows you to route requests between two applica
 
  Because application gateway are meant to process all request, You can use it to do central user AuthN/AuthZ at the entry point then perform trusted subsystem AuthN/AuthZ between the gateway and the backend.
 
- 
+
 
  # Overview #
 
@@ -66,6 +66,8 @@ var results = await router.RouteAsync("bing");
 2. **HttpRouterLib**: Extends RouterLib to support Http routing.
 3. **RouterLib.Owin**:  Broker as Owin Owin pipeline stage.
 4. **Router.Tests**: testing and sample project for all of the above.
+5. **ServiceFabric Directory** Contains a microservices SaaS scenario based on Azure Service Fabric. 
 
 # Next Steps #
 * [In-Depth](./docs/in-depth.md) Further discussion on how matching & execution strategy frameworks are working.
+* [Microservices SaaS scenario (Azure Service Fabric)](./docs/service-fabric-router.md)
