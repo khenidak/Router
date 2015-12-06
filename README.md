@@ -1,5 +1,5 @@
 # Router #
-Router is a building block that allows you to route requests between two application endpoints. The router is designed to work in-proc or behind a communication listener/broker. It is also designed to work in microservices based applications. Such as those hosted by Mesos or Azure Service Fabric. It is also designed to be used in SaaS scenarios where Saas solution is based on microservices architecture. Along with your process/communication broker it comprises an application gateway.
+Router is a building block that allows you to route requests between two application endpoints. The router is designed to work in-proc or behind a communication listener/broker. It is also designed to work in microservices based applications. Such as those hosted by Mesos or Azure Service Fabric. It is also designed to be used in SaaS scenarios where SaaS solution is based on microservices architecture. Along with your process/communication broker it comprises an application gateway.
 
 # Usage Context #
 1. Context based routing such as based on Http headers, host address, path, time of day, combination of conditions or custom.
