@@ -18,12 +18,12 @@ namespace WebUxSvc
 
         private readonly IOwinListenerSpec pipelineSpec;
 
-        private readonly ServiceInitializationParameters serviceParameters;
+        private readonly ServiceContext ServiceContext;
 
-        public OwinCommunicationListener(IOwinListenerSpec pipelineSpec, ServiceInitializationParameters serviceParameters)
+        public OwinCommunicationListener(IOwinListenerSpec pipelineSpec, ServiceContext serviceContext)
         {
             this.pipelineSpec = pipelineSpec;
-            this.serviceParameters = serviceParameters;
+            this.ServiceContext = serviceContext;
         }
         
         public void Abort()
@@ -42,8 +42,8 @@ namespace WebUxSvc
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)
         {
-            StatefulServiceInitializationParameters statefulInitParam = this.serviceParameters as StatefulServiceInitializationParameters;
-            int port = this.serviceParameters.CodePackageActivationContext.GetEndpoint("ServiceEndPoint").Port;
+            StatefulServiceContext statefulInitParam = this.ServiceContext as StatefulServiceContext;
+            int port = this.ServiceContext.CodePackageActivationContext.GetEndpoint("ServiceEndPoint").Port;
 
 
             if (statefulInitParam != null)

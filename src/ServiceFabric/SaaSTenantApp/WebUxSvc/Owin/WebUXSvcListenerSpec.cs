@@ -24,7 +24,7 @@ namespace WebUxSvc
                       ctx.Response.StatusCode = 200;
                       var sr = new StreamWriter(ctx.Response.Body);
                    
-                      await  sr.WriteAsync(service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName);
+                      await  sr.WriteAsync(service.Context.CodePackageActivationContext.ApplicationName);
                       await sr.FlushAsync();
                         sr = null;  
                     }

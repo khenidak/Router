@@ -19,13 +19,13 @@ namespace SaaSGatewaySvc
         private string publishingAddress = string.Empty;
 
         private readonly IOwinListenerSpec pipelineSpec;
-        private readonly ServiceInitializationParameters serviceParameters;
+        private readonly ServiceContext ServiceContext;
 
        
-        public OwinCommunicationListener(IOwinListenerSpec pipelineSpec, ServiceInitializationParameters serviceParameters)
+        public OwinCommunicationListener(IOwinListenerSpec pipelineSpec, ServiceContext serviceContext)
         {
             this.pipelineSpec = pipelineSpec;
-            this.serviceParameters = serviceParameters;
+            this.ServiceContext = serviceContext;
         }
         
         public void Abort()
@@ -44,8 +44,8 @@ namespace SaaSGatewaySvc
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)
         {
-            StatefulServiceInitializationParameters statefulInitParam = this.serviceParameters as StatefulServiceInitializationParameters;
-            int port = this.serviceParameters.CodePackageActivationContext.GetEndpoint("ServiceEndPoint").Port;
+            StatefulServiceContext statefulInitParam = this.ServiceContext as StatefulServiceContext;
+            int port = this.ServiceContext.CodePackageActivationContext.GetEndpoint("ServiceEndPoint").Port;
 
 
             if (statefulInitParam != null)
@@ -66,7 +66,7 @@ namespace SaaSGatewaySvc
                     port);
             }
 
-            //netsh http add urlacl url = http://localhost:80/ user="NT AUTHORITY\NETWORK SERVICE"
+            //netsh http add urlacl url = http://+:80/ user="NT AUTHORITY\NETWORK SERVICE"
             this.publishingAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
             this.webServer = WebApp.Start(this.listeningAddress, app => this.pipelineSpec.CreateOwinPipeline(app));
 

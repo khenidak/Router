@@ -67,6 +67,8 @@ namespace RouterTests
             mApiServer02.Start<ApiAppStartUp>(srv02Address);
             mApiServer03.Start<ApiAppStartUp>(srv03Address);
 
+            ServicePointManager.DefaultConnectionLimit = 10; // default is 2
+
             
         }
         

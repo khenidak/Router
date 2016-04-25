@@ -16,6 +16,8 @@ namespace HttpRouterLib
     /// </summary>
     public class HttpRoutingContext : RoutingContextBase
     {
+        protected const string State_Key_HttpClientsSet = "http.clientSet-{0}";
+
         public HttpMethod Method { get; set; } = HttpMethod.Get;
       
 
@@ -138,9 +140,16 @@ namespace HttpRouterLib
 
         }
 
-      
 
 
+        protected virtual HttpClient GetHttpClientForHost(string host)
+        {
+            // get the client manager from the state (managed by resolver)
+            var sStateKey = string.Format(State_Key_HttpClientsSet, MatcherTreeId);
+            var httpClientsManager = (HttpClientManager)Resolver.State.StateEntries.GetOrAdd(sStateKey, (dictKey) => new HttpClientManager());
+
+            return httpClientsManager.getHttpClient(host);
+        }
 
 
         public override async Task<RoutingResultBase> ExecuteAsync(ContextExecuteModeBase executeMode)
@@ -155,8 +164,7 @@ namespace HttpRouterLib
 
             var result = new HttpRoutingResult();
             result.ExecutionContext = this;
-            var client = new HttpClient();
-
+            
 
 
 
@@ -164,8 +172,9 @@ namespace HttpRouterLib
             {
                 case ContextRoutingType.Single:
                     {
-                        var hrm = getRequestMessage(TargetHostAddressList[0]);
-
+                        var host = TargetHostAddressList[0];
+                        var hrm = getRequestMessage(host);
+                        var client = GetHttpClientForHost(host);
                         var response = await client.SendAsync(hrm);
                         result.SetResult(response);
 
@@ -177,6 +186,7 @@ namespace HttpRouterLib
                         var tasks = new List<Task<HttpResponseMessage>>(TargetHostAddressList.Count());
                         foreach (var host in TargetHostAddressList)
                         {
+                            var client = GetHttpClientForHost(host);
                             var hrm = getRequestMessage(host);
 
                             tasks.Add(client.SendAsync(hrm));
@@ -194,6 +204,7 @@ namespace HttpRouterLib
                         var tasks = new List<Task<HttpResponseMessage>>(TargetHostAddressList.Count());
                         foreach (var host in TargetHostAddressList)
                         {
+                            var client = GetHttpClientForHost(host);
                             var hrm = getRequestMessage(host);
                             tasks.Add(client.SendAsync(hrm));
                         }
@@ -211,7 +222,9 @@ namespace HttpRouterLib
 
                 case ContextRoutingType.RoundRobin:
                     {
-                        var hrm = getRequestMessage(this.GetNextHostAddressInBalancingSet());
+                        var host = GetNextHostAddressInBalancingSet();
+                        var hrm = getRequestMessage(host);
+                        var client = GetHttpClientForHost(host);
                         var response = await client.SendAsync(hrm);
                         result.SetResult(response);
                         break;

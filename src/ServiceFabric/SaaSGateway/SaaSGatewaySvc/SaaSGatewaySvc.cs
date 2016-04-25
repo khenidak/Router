@@ -2,6 +2,7 @@
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,10 @@ namespace SaaSGatewaySvc
     /// </summary>
     internal sealed class SaaSGatewaySvc : StatelessService
     {
+        public SaaSGatewaySvc(StatelessServiceContext serviceContext) : base ( serviceContext)
+        {
+
+        }
         /// <summary>
         /// Optional override to create listeners (like tcp, http) for this service instance.
         /// </summary>

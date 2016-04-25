@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExecutionStrategyFrxExt\RouteToHostStrategy.cs" />
+    <Compile Include="HttpClientManager.cs" />
     <Compile Include="HttpMatchingFrxExt\HttpAddSetHeaderMatcher.cs" />
     <Compile Include="HttpMatchingFrxExt\HttpFromOwinReqCtxMatcher.cs" />
     <Compile Include="HttpMatchingFrxExt\HttpOverridePathMatcher.cs" />
