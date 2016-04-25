@@ -64,7 +64,14 @@ var results = await router.RouteAsync("bing");
 2. **HttpRouterLib**: Extends RouterLib to support Http routing.
 3. **RouterLib.Owin**: Broker as Owin Owin pipeline stage.
 4. **Router.Tests**: Testing and sample project for all of the above.
-5. **ServiceFabric Directory**: Contains a microservices SaaS scenario based on Azure Service Fabric. 
+5. **ServiceFabric Directory**: Contains a microservices SaaS scenario based on Azure Service Fabric.
+
+# Notes On HttpRouter Performance #
+The Http Router has been improved with the following:
+1. HttpClient instances are cached by host. (note xxx.host.com != yyy.host.com). Clients are never released.
+2. HttpClient by default employs a basic connection pool.
+3. By default each HttpClient instance maintain max-of 2 connection to host (Default .NET limits). HttpClient respects ServicePointManager class. So make sure to set ServicePointManager.DefaultConnectionLimit for the entire process for your production system to fan out connections from router to backend hosts.
+   
 
 # Next Steps #
 * [In-Depth](./docs/in-depth.md) Further discussion on how matching & execution strategy frameworks are working.
